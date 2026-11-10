@@ -1,0 +1,29 @@
+name: muse-smoke
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: muse-smoke-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Emit synthetic nonce
+        run: |
+          NONCE=$(python3 -c 'import secrets; print(secrets.token_hex(16))')
+          echo "nonce=$NONCE" | tee nonce.txt
+      - name: Upload nonce artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: muse-smoke-nonce
+          path: nonce.txt
+          retention-days: 1
